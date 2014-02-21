@@ -1,8 +1,9 @@
 package com.gd.mail.webdriver;
 
-import org.openqa.selenium.By;
+import com.gd.mail.pages.InboxPage;
+import com.gd.mail.pages.LoginPage;
+import com.gd.mail.pages.SendMsgPage;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -27,22 +28,20 @@ public class MailTest {
 
         webDriver.get("https://mail.ru");
 
-        WebElement login = webDriver.findElement(By.id("mailbox__login"));
-        login.sendKeys(myLogin);
+        LoginPage loginPage = new LoginPage(webDriver);
 
-        WebElement password = webDriver.findElement(By.id("mailbox__password"));
-        password.sendKeys(myPassword);
-
-        WebElement submit = webDriver.findElement(By.id("mailbox__auth__button"));
-        submit.click();
+        loginPage.loginTextBox.sendKeys(myLogin);
+        loginPage.passwordTextBox.sendKeys(myPassword);
+        loginPage.submitButton.click();
 
     }
 
     @AfterClass
     public void logout() {
 
-        WebElement logout = webDriver.findElement(By.id("PH_logoutLink"));
-        logout.click();
+        LoginPage loginPage = new LoginPage(webDriver);
+        loginPage.logoutButton.click();
+
         webDriver.close();
 
     }
@@ -50,8 +49,8 @@ public class MailTest {
     @Test
     void testLogin() {
 
-        WebElement logout = webDriver.findElement(By.id("PH_logoutLink"));
-        assertTrue(logout.isDisplayed());
+        LoginPage loginPage = new LoginPage(webDriver);
+        assertTrue(loginPage.logoutButton.isDisplayed());
 
     }
 
@@ -60,18 +59,12 @@ public class MailTest {
 
         webDriver.get("https://e.mail.ru/compose");
 
-        WebElement recipient = webDriver.findElement(By.cssSelector("input.js-input.compose__labels__input"));
-        recipient.sendKeys(recipientMsg);
+        SendMsgPage sendMsgPage = new SendMsgPage(webDriver);
 
-        WebElement subject = webDriver.findElement(By.id("compose_223_ab_compose_subj"));
-        subject.sendKeys(subjectMsg);
-
-        WebElement sendMsgButton = webDriver.findElement(By.cssSelector("div.b-toolbar__btn > span.b-" +
-                "toolbar__btn__text"));
-        sendMsgButton.click();
-
-        WebElement sendBlankMsg = webDriver.findElement(By.xpath("(//button[@type=\"submit\"])[22]"));
-        sendBlankMsg.click();
+        sendMsgPage.recipientTextBox.sendKeys(recipientMsg);
+        sendMsgPage.subjectTextBox.sendKeys(subjectMsg);
+        sendMsgPage.sendMsgButton.click();
+        sendMsgPage.sendBlankMsgButton.click();
 
         new WebDriverWait(webDriver, 10)
                 .until(ExpectedConditions.titleContains("отправлено"));
@@ -84,8 +77,11 @@ public class MailTest {
     @Test
     public void testInbox() {
 
-        WebElement inbox = webDriver.findElement(By.cssSelector("span.b-nav__item__text"));
-        inbox.click();
+        InboxPage inboxPage = new InboxPage(webDriver);
+        inboxPage.inbox.click();
+
+        new WebDriverWait(webDriver, 10)
+                .until(ExpectedConditions.titleContains("Входящие"));
 
         String title = webDriver.getTitle();
         assertTrue(title.endsWith(myLogin + "@mail.ru - Почта Mail.Ru"));
@@ -95,8 +91,8 @@ public class MailTest {
     @Test
     public void testSent() {
 
-        WebElement sent = webDriver.findElement(By.xpath("//*[@id=\'b-nav_folders\']/div/a[2]/div/span"));
-        sent.click();
+        InboxPage inboxPage = new InboxPage(webDriver);
+        inboxPage.sent.click();
 
         new WebDriverWait(webDriver, 10)
                 .until(ExpectedConditions.titleContains("Отправленные"));
@@ -108,8 +104,8 @@ public class MailTest {
     @Test
     public void testDrafts() {
 
-        WebElement drafts = webDriver.findElement(By.xpath("//div[@id=\'b-nav_folders\']/div/a[3]/div/span"));
-        drafts.click();
+        InboxPage inboxPage = new InboxPage(webDriver);
+        inboxPage.drafts.click();
 
         new WebDriverWait(webDriver, 10)
                 .until(ExpectedConditions.titleContains("Черновики"));
