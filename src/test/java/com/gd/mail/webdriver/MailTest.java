@@ -1,46 +1,49 @@
 package com.gd.mail.webdriver;
 
-import com.gd.mail.pages.InboxPage;
+import com.gd.mail.pages.Dashboard;
+import com.gd.mail.pages.MenuWithMsgFolders;
 import com.gd.mail.pages.LoginPage;
 import com.gd.mail.pages.SendMsgPage;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
+
+import java.util.List;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 
+
 public class MailTest {
 
     WebDriver webDriver = new FirefoxDriver();
+
     String myLogin = "selenium.test1";
     String myPassword = "selenium123";
     String recipientMsg = "baskal.darya@gmail.com";
     String subjectMsg = "test";
 
-    @BeforeClass
+    @BeforeClass()
     public void loginToMail() {
 
         webDriver.get("https://mail.ru");
 
         LoginPage loginPage = new LoginPage(webDriver);
 
-        loginPage.loginTextBox.sendKeys(myLogin);
-        loginPage.passwordTextBox.sendKeys(myPassword);
-        loginPage.submitButton.click();
+        loginPage.getLoginTextBox().sendKeys(myLogin);
+        loginPage.getPasswordTextBox().sendKeys(myPassword);
+        loginPage.getSubmitButton().click();
 
     }
 
     @AfterClass
     public void logout() {
 
-        LoginPage loginPage = new LoginPage(webDriver);
-        loginPage.logoutButton.click();
+        Dashboard dashboard = new Dashboard(webDriver);
+        dashboard.getLogoutButton().click();
 
         webDriver.close();
 
@@ -49,8 +52,8 @@ public class MailTest {
     @Test
     void testLogin() {
 
-        LoginPage loginPage = new LoginPage(webDriver);
-        assertTrue(loginPage.logoutButton.isDisplayed());
+        Dashboard dashboard = new Dashboard(webDriver);
+        assertTrue(dashboard.getLogoutButton().isDisplayed());
 
     }
 
@@ -61,13 +64,12 @@ public class MailTest {
 
         SendMsgPage sendMsgPage = new SendMsgPage(webDriver);
 
-        sendMsgPage.recipientTextBox.sendKeys(recipientMsg);
-        sendMsgPage.subjectTextBox.sendKeys(subjectMsg);
-        sendMsgPage.sendMsgButton.click();
-        sendMsgPage.sendBlankMsgButton.click();
+        sendMsgPage.getRecipientTextBox().sendKeys(recipientMsg);
+        sendMsgPage.getSubjectTextBox().sendKeys(subjectMsg);
+        sendMsgPage.getSendMsgButton().click();
+        sendMsgPage.getSendBlankMsgButton().click();
 
-        new WebDriverWait(webDriver, 10)
-                .until(ExpectedConditions.titleContains("отправлено"));
+        expectLoading("отправлено", 10);
 
         webDriver.getTitle();
         assertEquals(webDriver.getTitle(), "Письмо отправлено - " + myLogin + "@mail.ru - Почта Mail.Ru");
@@ -77,11 +79,10 @@ public class MailTest {
     @Test
     public void testInbox() {
 
-        InboxPage inboxPage = new InboxPage(webDriver);
-        inboxPage.inbox.click();
+        MenuWithMsgFolders msgFolders = new MenuWithMsgFolders(webDriver);
+        msgFolders.getInbox().click();
 
-        new WebDriverWait(webDriver, 10)
-                .until(ExpectedConditions.titleContains("Входящие"));
+        expectLoading("Входящие", 10);
 
         String title = webDriver.getTitle();
         assertTrue(title.endsWith(myLogin + "@mail.ru - Почта Mail.Ru"));
@@ -91,27 +92,28 @@ public class MailTest {
     @Test
     public void testSent() {
 
-        InboxPage inboxPage = new InboxPage(webDriver);
-        inboxPage.sent.click();
+        MenuWithMsgFolders msgFolders = new MenuWithMsgFolders(webDriver);
+        msgFolders.getSent().click();
 
-        new WebDriverWait(webDriver, 10)
-                .until(ExpectedConditions.titleContains("Отправленные"));
-
-        assertEquals(webDriver.getTitle(), "Отправленные - " + myLogin + "@mail.ru - Почта Mail.Ru");
+        expectLoading("Отправленные", 10);
+        msgFolders.assertTitle(webDriver, "Отправленные", myLogin);
 
     }
 
     @Test
     public void testDrafts() {
 
-        InboxPage inboxPage = new InboxPage(webDriver);
-        inboxPage.drafts.click();
+        MenuWithMsgFolders msgFolders = new MenuWithMsgFolders(webDriver);
+        msgFolders.getDrafts().click();
 
-        new WebDriverWait(webDriver, 10)
-                .until(ExpectedConditions.titleContains("Черновики"));
+        expectLoading("Черновики", 10);
+        msgFolders.assertTitle(webDriver, "Черновики", myLogin);
 
-        assertEquals(webDriver.getTitle(), "Черновики - " + myLogin + "@mail.ru - Почта Mail.Ru");
+    }
 
+    private void expectLoading(String title, long t) {
+        new WebDriverWait(webDriver, t)
+                .until(ExpectedConditions.titleContains(title));
     }
 
 }

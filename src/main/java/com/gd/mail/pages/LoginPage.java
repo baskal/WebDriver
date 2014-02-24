@@ -13,21 +13,40 @@ public class LoginPage {
     private final WebDriver driver;
 
     @FindBy(id = "mailbox__login")
-    public WebElement loginTextBox;
+    private WebElement loginTextBox;
 
     @FindBy(id = "mailbox__password")
-    public  WebElement passwordTextBox;
+    private WebElement passwordTextBox;
 
     @FindBy(id = "mailbox__auth__button")
-    public WebElement submitButton;
+    private WebElement submitButton;
 
-    @FindBy(id = "PH_logoutLink")
-    public WebElement logoutButton;
+    public WebElement getLoginTextBox() {
+        return loginTextBox;
+    }
+
+    public void setLoginTextBox(WebElement loginTextBox) {
+        this.loginTextBox = loginTextBox;
+    }
+
+    public WebElement getPasswordTextBox() {
+        return passwordTextBox;
+    }
+
+    public void setPasswordTextBox(WebElement passwordTextBox) {
+        this.passwordTextBox = passwordTextBox;
+    }
+
+    public WebElement getSubmitButton() {
+        return submitButton;
+    }
+
+    public void setSubmitButton(WebElement submitButton) {
+        this.submitButton = submitButton;
+    }
 
     public LoginPage(WebDriver driver) {
         PageFactory.initElements(driver, this);
         this.driver = driver;
     }
-
-
 }
