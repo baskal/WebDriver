@@ -21,10 +21,12 @@ public class MailTest {
 
     WebDriver webDriver = new FirefoxDriver();
 
-    String myLogin = "selenium.test1";
-    String myPassword = "selenium123";
-    String recipientMsg = "baskal.darya@gmail.com";
-    String subjectMsg = "test";
+    @DataProvider(name = "rs")
+    private Object[][] getRS() {
+        return new Object[][] {
+                {"baskal.darya@gmail.com", "test"}
+        };
+    }
 
     @BeforeClass()
     public void loginToMail() {
@@ -33,8 +35,9 @@ public class MailTest {
 
         LoginPage loginPage = new LoginPage(webDriver);
 
-        loginPage.getLoginTextBox().sendKeys(myLogin);
-        loginPage.getPasswordTextBox().sendKeys(myPassword);
+        UserData userData = new UserData();
+        loginPage.getLoginTextBox().sendKeys(userData.getLogin());
+        loginPage.getPasswordTextBox().sendKeys(userData.getPassword());
         loginPage.getSubmitButton().click();
 
     }
@@ -57,22 +60,23 @@ public class MailTest {
 
     }
 
-    @Test
-    public void testSendMsg() {
+    @Test(dataProvider = "rs")
+    public void testSendMsg(String recipient, String subject) {
 
         webDriver.get("https://e.mail.ru/compose");
 
         SendMsgPage sendMsgPage = new SendMsgPage(webDriver);
 
-        sendMsgPage.getRecipientTextBox().sendKeys(recipientMsg);
-        sendMsgPage.getSubjectTextBox().sendKeys(subjectMsg);
+        sendMsgPage.getRecipientTextBox().sendKeys(recipient);
+        sendMsgPage.getSubjectTextBox().sendKeys(subject);
         sendMsgPage.getSendMsgButton().click();
         sendMsgPage.getSendBlankMsgButton().click();
 
         expectLoading("отправлено", 10);
 
+        UserData userData = new UserData();
         webDriver.getTitle();
-        assertEquals(webDriver.getTitle(), "Письмо отправлено - " + myLogin + "@mail.ru - Почта Mail.Ru");
+        assertEquals(webDriver.getTitle(), "Письмо отправлено - " + userData.getLogin() + "@mail.ru - Почта Mail.Ru");
 
     }
 
@@ -84,8 +88,9 @@ public class MailTest {
 
         expectLoading("Входящие", 10);
 
+        UserData userData = new UserData();
         String title = webDriver.getTitle();
-        assertTrue(title.endsWith(myLogin + "@mail.ru - Почта Mail.Ru"));
+        assertTrue(title.endsWith(userData.getLogin() + "@mail.ru - Почта Mail.Ru"));
 
     }
 
@@ -95,8 +100,9 @@ public class MailTest {
         MenuWithMsgFolders msgFolders = new MenuWithMsgFolders(webDriver);
         msgFolders.getSent().click();
 
+        UserData userData = new UserData();
         expectLoading("Отправленные", 10);
-        msgFolders.assertTitle(webDriver, "Отправленные", myLogin);
+        msgFolders.assertTitle(webDriver, "Отправленные", userData.getLogin());
 
     }
 
@@ -106,8 +112,9 @@ public class MailTest {
         MenuWithMsgFolders msgFolders = new MenuWithMsgFolders(webDriver);
         msgFolders.getDrafts().click();
 
+        UserData userData = new UserData();
         expectLoading("Черновики", 10);
-        msgFolders.assertTitle(webDriver, "Черновики", myLogin);
+        msgFolders.assertTitle(webDriver, "Черновики", userData.getLogin());
 
     }
 
